@@ -1,0 +1,6 @@
+/benchstat-prof
+/.benchstat-prof/
+/report-ui/node_modules/
+/report-ui/.test/
+/report-ui/test-results/
+/report-ui/playwright-report/

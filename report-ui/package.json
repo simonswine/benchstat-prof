@@ -1,0 +1,23 @@
+{
+  "name": "benchstat-prof-report-ui",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "packageManager": "pnpm@12.10.1",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "build": "esbuild main.tsx --bundle --minify --jsx=automatic --format=iife --legal-comments=eof --outfile=assets/report.js",
+    "test": "esbuild pprof.ts --bundle --platform=node --format=esm --outfile=.test/pprof.mjs && node --test pprof.test.mjs",
+    "test:integration": "pnpm run build && playwright test"
+  },
+  "dependencies": {
+    "@simonswine/grafana-flamegraph": "0.1.0",
+    "fflate": "0.8.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "esbuild": "0.28.2"
+  }
+}
