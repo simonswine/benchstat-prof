@@ -133,13 +133,15 @@ func benchmarkTarget(ctx context.Context, repo string, revision target, side str
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("create worktree: %w: %s", err, out)
 		}
+		worktreeDir := dir
 		defer func() {
 			// Cleanup must still run when the benchmark context was canceled.
-			cmd := exec.Command("git", "-C", repo, "worktree", "remove", "--force", dir)
+			cmd := exec.Command("git", "-C", repo, "worktree", "remove", "--force", worktreeDir)
 			if out, cleanupErr := cmd.CombinedOutput(); cleanupErr != nil {
 				err = errors.Join(err, fmt.Errorf("remove worktree: %w: %s", cleanupErr, out))
 			}
 		}()
+		dir = filepath.Join(dir, revision.dir)
 	}
 	if err := executeTests(ctx, dir, side, "go-test", nil, opts.TestArgs); err != nil {
 		return err

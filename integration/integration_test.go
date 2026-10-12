@@ -116,7 +116,7 @@ func BenchmarkChild(b *testing.B) {
 		cmd.Dir = filepath.Join(repo, "child")
 		return cmd.CombinedOutput()
 	}
-	forwarded := []string{"-tags=perfbench", "-count=2", "-benchtime=150ms", "-json", "./...", "-args", "-fixture-size=8192"}
+	forwarded := []string{"-tags=perfbench", "-count=2", "-benchtime=150ms", "-json", "../...", "-args", "-fixture-size=8192"}
 	args := append([]string{"test", "--base", "HEAD~1", "--comparison", "HEAD", "--run-name", "full-integration", "--"}, forwarded...)
 	out, err := invoke(args...)
 	if err != nil {

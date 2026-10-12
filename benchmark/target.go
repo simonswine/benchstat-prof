@@ -70,6 +70,29 @@ func resolveTarget(ctx context.Context, repo, ref string) (target, error) {
 	if ref == "" {
 		return target{}, fmt.Errorf("commit reference must not be empty")
 	}
+	rel, err := worktreeRelativeDir(ctx, repo)
+	if err != nil {
+		return target{}, err
+	}
 	sha, err := resolveCommit(ctx, repo, ref)
-	return target{sha: sha}, err
+	return target{dir: rel, sha: sha}, err
+}
+
+// worktreeRelativeDir preserves the invocation directory in detached worktrees.
+func worktreeRelativeDir(ctx context.Context, dir string) (string, error) {
+	out, err := exec.CommandContext(ctx, "git", "-C", dir, "rev-parse", "--show-toplevel").CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("%s is not in a Git worktree: %w: %s", dir, err, out)
+	}
+	root := strings.TrimSpace(string(out))
+	// Resolve symlinks on both sides (notably macOS /var versus /private/var).
+	dir, err = filepath.EvalSymlinks(dir)
+	if err != nil {
+		return "", err
+	}
+	root, err = filepath.EvalSymlinks(root)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Rel(root, dir)
 }
