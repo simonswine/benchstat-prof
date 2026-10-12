@@ -90,9 +90,10 @@ for (const mode of ['web', 'local']) {
         await section.getByLabel(`${benchmark.name} profile`, { exact: true }).selectOption({ label: profile.name });
         await expect(section.getByTestId('flameGraph').first()).toBeVisible();
         await expect(section.getByRole('alert')).toHaveCount(0);
-        const canvas = await section.getByTestId('flameGraph').first().evaluate(element => ({ width: element.width, height: element.height }));
-        expect(canvas.width).toBeGreaterThan(0);
-        expect(canvas.height).toBeGreaterThan(0);
+        // Visibility can precede the asynchronous canvas sizing/render pass.
+        const canvas = section.getByTestId('flameGraph').first();
+        await expect.poll(() => canvas.evaluate(element => element.width)).toBeGreaterThan(0);
+        await expect.poll(() => canvas.evaluate(element => element.height)).toBeGreaterThan(0);
         for (const side of ['baseline', 'comparison']) {
           // Chromium rate-limits more than ten downloads in a second.
           await page.waitForTimeout(150);
