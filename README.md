@@ -33,6 +33,38 @@ invocation directory; `--repo` selects the repository used to resolve Git refs.
   -- -bench . -count 5 ./...
 ```
 
+For a fixed-work comparison against a specific commit, first change into the
+package directory you want to benchmark (with `benchstat-prof` installed on your
+`PATH`). Commit targets preserve this repository-relative directory in their
+temporary worktrees, so `./` selects the same package in both revisions:
+
+```sh
+cd /path/to/project/package
+GOGC=off benchstat-prof test \
+  --base 8778a351f34cdc8c7cc520bf2a7726b625ca40c8 \
+  --comparison HEAD \
+  -- -run '^$' -bench '.' -count=10 -benchtime=1000x -cpu=1 ./
+```
+
+See an [example report](https://simonswine.github.io/benchstat-prof-reports/reports/20261012-161309.144251000Z-benchmarking-gecko/report.html), including interactive flamegraphs:
+
+[![Expanded baseline CPU flamegraph in single-pane layout](docs/images/example-flamegraph.png)](https://simonswine.github.io/benchstat-prof-reports/reports/20261012-161309.144251000Z-benchmarking-gecko/report.html)
+
+- `GOGC=off` disables automatic garbage collection under normal conditions,
+  reducing GC-related timing noise and helping isolate the implementation's CPU
+  cost. Explicit collections (including those performed by the benchmark harness)
+  still run, and a configured `GOMEMLIMIT` can still trigger collection. Memory
+  usage can grow substantially, and the results exclude normal GC overhead;
+  also benchmark with GC enabled when measuring production performance.
+- `-benchtime=1000x` runs each benchmark for exactly 1,000 iterations per sample,
+  rather than choosing an iteration count to fill a time duration. Both revisions
+  therefore do the same number of iterations, which is useful for comparing
+  profiles and bounding allocation growth with GC disabled. Choose enough
+  iterations to avoid noisy, very short measurements.
+- `-count=10` collects ten samples, and `-cpu=1` sets `GOMAXPROCS=1` for the
+  benchmark runs. `--comparison HEAD` tests the committed revision, not
+  uncommitted changes.
+
 Everything after `--` is forwarded unchanged to `go test` for both targets.
 Default arguments are `-run=^$ -bench=. -benchmem -count=10`, placed before
 forwarded arguments so explicit flags override them. Without a package argument,
