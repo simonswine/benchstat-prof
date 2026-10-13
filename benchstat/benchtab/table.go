@@ -10,10 +10,10 @@ import (
 	"io"
 	"strings"
 
+	"github.com/simonswine/benchstat-prof/benchstat/texttab"
 	"golang.org/x/perf/benchmath"
 	"golang.org/x/perf/benchproc"
 	"golang.org/x/perf/benchunit"
-	"github.com/simonswine/benchstat-prof/benchstat/texttab"
 )
 
 // A Table summarizes and compares benchmark results in a 2D grid.
